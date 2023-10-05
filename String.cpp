@@ -62,7 +62,44 @@ void String::clear() noexcept
     }
 }
 
+bool String::empty() const noexcept
+{
+    return !(static_cast<bool>(m_length));
+}
+
+size_t String::length() const noexcept
+{
+    return m_length;
+}
+
+size_t String::size() const noexcept
+{
+    return m_capacity;
+}
+
 char &String::operator[](const size_t pos) noexcept
 {
     return m_data[pos];
+}
+
+std::ostream &operator<<(std::ostream &os, const String &str)
+{
+    std::copy(str.m_data, str.m_data + str.m_length, std::ostream_iterator<char>(os));
+    return os;
+}
+
+std::istream &operator>>(std::istream &is, String &str)
+{
+    str.clear();
+    do
+    {
+        const char c = is.get();
+        if (not std::isgraph(c))
+        {
+            break;
+        }
+        str.push_back(c);
+    } while (true);
+
+    return is;
 }

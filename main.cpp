@@ -3,19 +3,15 @@
 
 int main()
 {
-
-    std::cout << "Hello \n";
+    std::cout << "---Init---\n";
     String str;
 
-    for (int i = 0; i < 10; i++)
-    {
-        str.push_back(i + 65);
-    }
+    std::cout << "Size " << str.size() << "\nLength " << str.length() << "\nIsEmpty " << str.empty() << std::endl;
+    std::cin >> str;
+    std::cout << "---After init---\n";
+    std::cout << "Size " << str.size() << "\nLength " << str.length() << "\nIsEmpty " << str.empty() << std::endl;
 
-    for (int i = 0; i < 10; i++)
-    {
-        std::cout << str[i] << std::endl;
-    }
+    std::cout << str << std::endl;
 
     return 0;
 }
