@@ -8,12 +8,37 @@ String::String() : m_length{0}, m_capacity{0}, m_data{nullptr}
 {
 }
 
+String::String(const char *cstr)
+{
+    append(cstr);
+}
+
+String::String(String &&other) noexcept
+{
+    move(other);
+}
+
 String::~String()
 {
     if (m_data != nullptr)
     {
         delete[] m_data;
     }
+}
+
+String &String::append(const char *cstr)
+{
+    if (cstr == nullptr)
+    {
+        throw std::logic_error("String: Invalig argument append(c_str)");
+    }
+
+    const size_t s_len = std::strlen(cstr);
+    for (size_t i = 0; i < s_len; i++)
+    {
+        push_back(cstr[i]);
+    }
+    return *this;
 }
 
 void String::reserve(const size_t sz)
@@ -77,9 +102,52 @@ size_t String::size() const noexcept
     return m_capacity;
 }
 
-char &String::operator[](const size_t pos) noexcept
+char &String::at(const size_t pos) const
+{
+    if (pos > m_length)
+    {
+        throw std::out_of_range("String: at() out of range");
+    }
+
+    return m_data[pos];
+}
+
+const char *String::data() const noexcept
+{
+    return m_data;
+}
+
+char &String::operator[](const size_t pos) const
 {
     return m_data[pos];
+}
+
+void String::move(String &other) noexcept
+{
+    m_data = other.m_data;
+    m_capacity = other.m_capacity;
+    m_length = other.m_length;
+    other.m_data = nullptr;
+    other.m_length = 0;
+    other.m_capacity = 0;
+}
+
+String &String::operator=(String &&other) noexcept
+{
+    move(other);
+    return *this;
+}
+
+String &String::operator+=(const char *cstr)
+{
+    append(cstr);
+    return *this;
+}
+
+bool String::operator<(const String &other) const
+{
+    const size_t cmp_len = std::min(m_length, other.m_length);
+    return (std::strncmp(m_data, other.m_data, cmp_len) < 0);
 }
 
 std::ostream &operator<<(std::ostream &os, const String &str)
@@ -102,4 +170,54 @@ std::istream &operator>>(std::istream &is, String &str)
     } while (true);
 
     return is;
+}
+
+bool operator==(const String &lstr, const String &rstr)
+{
+    const size_t llen = lstr.length();
+    const size_t rlen = rstr.length();
+
+    if (llen == 0 and rlen == 0)
+    {
+        return true;
+    }
+
+    if ((lstr.m_data == nullptr) or (rstr.m_data == nullptr))
+    {
+        return false;
+    }
+
+    return !std::strncmp(lstr.m_data, rstr.m_data, std::min(llen, rlen));
+}
+
+bool operator!=(const String &lstr, const String &rstr)
+{
+    return !(lstr == rstr);
+}
+
+bool operator==(const String &lstr, const char *rstr)
+{
+    return (lstr == String(rstr));
+}
+
+const String operator+(const String &lstr, const String &rstr)
+{
+    String str;
+    str.m_length = lstr.length() + rstr.length();
+    str.m_capacity = str.m_length + 1;
+    str.m_data = new char[str.m_capacity];
+    std::memcpy(str.m_data, lstr.data(), lstr.length());
+    std::memcpy(str.m_data + lstr.length(), rstr.data(), rstr.length());
+    str.m_data[str.m_length] = '\0';
+    return str;
+}
+
+const String operator+(const String &lstr, const char *rstr)
+{
+    return lstr + String(rstr);
+}
+
+const String operator+(const char *lstr, const String &rstr)
+{
+    return String(lstr) + rstr;
 }
